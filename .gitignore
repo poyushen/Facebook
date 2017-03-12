@@ -1,0 +1,6 @@
+app/app.iml
+build/
+Facebook-Slider.iml
+.gradle/
+.idea
+local.properties
