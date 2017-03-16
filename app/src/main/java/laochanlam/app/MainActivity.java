@@ -25,8 +25,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Stack;
 
 
@@ -41,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
     Stack ViewItem = new Stack();
     private Button startButton;
     private TextView textMsg;
-    private JsonArray jsonArray;
+    public String jjarray="";
+    public GlobalTouchService touchService;
 
 
     TextView view_for_5sec,view_for_10sec,view_for_30sec;
@@ -52,8 +60,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.Startbutton);
         textMsg = (TextView) findViewById(R.id.textMsg);
-
-
 
         handler = new Handler() {
             @Override
@@ -73,11 +79,62 @@ public class MainActivity extends AppCompatActivity {
                 globalService = new Intent(this, GlobalTouchService.class);
         } else globalService = new Intent(this,GlobalTouchService.class);
 
-        jsonArray=new JsonArray();
+        readfile();
+        
+        //Intent serviceIntent=new Intent(this,GlobalTouchService.class);
+        //this.bindService(serviceIntent,connection,Context.BIND_AUTO_CREATE);
 
     }
 
+   /* public ServiceConnection connection=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            touchService=((GlobalTouchService.MyBinder)service).getService();
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };*/
+
+
+
+    public void readfile()
+    {
+        BufferedReader reader=null;
+        try{
+            reader =new BufferedReader(new InputStreamReader(getAssets().open("jarray.json")));
+            String mLine=reader.readLine();
+
+            while (mLine!=null){
+                jjarray+=mLine;
+                mLine=reader.readLine();
+            }
+        }catch (IOException e)
+        {
+            e.printStackTrace();
+        }finally {
+            if(reader!=null)
+            {
+                try {
+                    reader.close();
+                }catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        Log.e("read",jjarray);
+
+        try {
+            JSONArray jsonArray = new JSONArray(jjarray);
+
+        }catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
 
     public void StartbuttonClicked(View v){

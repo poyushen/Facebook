@@ -6,10 +6,10 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -24,7 +24,11 @@ import android.widget.LinearLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 
 
@@ -38,12 +42,50 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     private long TimeCounter = 0;
     private long PrevTime = 0;
 
-    private JsonArray jsonArray=new JsonArray();
-    private double distance1=0;
-    private double distance2=0;
-    private double distance3=0;
-    private double distance4=0;
-    private double distance5=0;
+    /*public MyBinder mybinder=new MyBinder();
+
+    public class MyBinder extends Binder {
+        public GlobalTouchService getService(){
+            return GlobalTouchService.this;
+        }
+    }*/
+
+    private String jarray="[\n" +
+            "{\"Id\":\"1\",\"Title\":\"Nagasaki\",\"Latitude\":\"20\",\"Longitude\":\"15\",\"Description\":\"Here is Nagasaki\"},\n" +
+            "{\"Id\":\"2\",\"Title\":\"Hakata\",\"Latitude\":\"32\",\"Longitude\":\"24\",\"Description\":\"Here is Hakata\"},\n" +
+            "{\"Id\":\"3\",\"Title\":\"Kumamoto\",\"Latitude\":\"40\",\"Longitude\":\"30\",\"Description\":\"Here is Kumamoto\"},\n" +
+            "{\"Id\":\"4\",\"Title\":\"Oita\",\"Latitude\":\"80\",\"Longitude\":\"60\",\"Description\":\"Here is Oita\"},\n" +
+            "{\"Id\":\"5\",\"Title\":\"Aso\",\"Latitude\":\"120\",\"Longitude\":\"90\",\"Description\":\"Here is Aso\"}\n" +
+            "]";
+
+    public JSONArray jsonArray;
+    public JSONObject[] jsonObjects=new JSONObject[5];
+    public int[] latitude=new int[5];
+    public int[] longitude=new int[5];
+    public double[] distance=new double[5];
+    public String[] id=new String [5];
+    public String[] title=new String[5];
+    public String[] description=new String[5];
+
+
+    public void compute(){
+        try
+        {
+            jsonArray = new JSONArray(jarray);
+            for(int a=0;a<jsonArray.length();a++) {
+                jsonObjects[a]=jsonArray.getJSONObject(a);
+                latitude[a]=jsonObjects[a].getInt("Latitude");
+                longitude[a]=jsonObjects[a].getInt("Longitude");
+                distance[a]=Math.sqrt(Math.pow(latitude[a],2)+Math.pow(longitude[a],2));
+                id[a]=jsonObjects[a].getString("Id");
+                title[a]=jsonObjects[a].getString("Title");
+                description[a]=jsonObjects[a].getString("Description");
+            }
+        }catch(JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -94,49 +136,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     }
 
     Message msg;
-    private void compute(JsonArray array)
-    {
-        int lat1=0;
-        int lat2=0;
-        int lat3=0;
-        int lat4=0;
-        int lat5=0;
-        int lon1=0;
-        int lon2=0;
-        int lon3=0;
-        int lon4=0;
-        int lon5=0;
 
-        try {
-            lat1 = jsonArray.jObject1.getInt("Latitude");
-            lat2 = jsonArray.jObject2.getInt("Latitude");
-            lat3 = jsonArray.jObject3.getInt("Latitude");
-            lat4 = jsonArray.jObject4.getInt("Latitude");
-            lat5 = jsonArray.jObject5.getInt("Latitude");
-
-            lon1=jsonArray.jObject1.getInt("Longitude");
-            lon2=jsonArray.jObject2.getInt("Longitude");
-            lon3=jsonArray.jObject3.getInt("Longitude");
-            lon4=jsonArray.jObject4.getInt("Longitude");
-            lon5=jsonArray.jObject5.getInt("Longitude");
-
-            distance1=Math.sqrt(Math.pow(lat1,2)+Math.pow(lon1,2));
-            distance2=Math.sqrt(Math.pow(lat2,2)+Math.pow(lon2,2));
-            distance3=Math.sqrt(Math.pow(lat3,2)+Math.pow(lon3,2));
-            distance4=Math.sqrt(Math.pow(lat4,2)+Math.pow(lon4,2));
-            distance5=Math.sqrt(Math.pow(lat5,2)+Math.pow(lon5,2));
-
-            Log.e("dis",""+distance1);
-            Log.e("dis",""+distance2);
-            Log.e("dis",""+distance3);
-            Log.e("dis",""+distance4);
-            Log.e("dis",""+distance5);
-        }catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-
-    }
 
     private void checkPoints(long change) {
         long[] points = {5000, 10000, 30000};
@@ -157,16 +157,11 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             builder.setTitle(R.string.app_name);
             builder.setPositiveButton("關閉", null);
             builder.setIcon(R.drawable.ic_launcher);
-            if(msg.what*5==distance1){
-                builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n已經滑動您手機" + msg.what * 5 + "單位。\n到達Nagasaki");}
-            else if(msg.what*5==distance2){
-                builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n已經滑動您手機" + msg.what * 5 + "單位。\n到達Hakata");}
-            else if(msg.what*5==distance3){
-                builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n已經滑動您手機" + msg.what * 5 + "單位。\n到達Kumamoto");}
-            else if(msg.what*5==distance4){
-                builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n已經滑動您手機" + msg.what * 5 + "單位。\n到達Oita");}
-            else if(msg.what*5==distance5){
-                builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n已經滑動您手機" + msg.what * 5 + "單位。\n到達Aso");}
+            for(int a=0;a<jsonArray.length();a++) {
+                if (distance[a] == msg.what * 5)
+                    builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機"+msg.what*5+"單位。\n已經到達"+title[a]);
+            }
+            //builder.setMessage("您已經滑動手機 " + msg.what + " 秒。");
             AlertDialog AlertDialog = builder.create();
             AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             AlertDialog.show();
@@ -196,7 +191,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     public boolean onTouch (View v , MotionEvent event){
 
         long CurrentTime = SystemClock.elapsedRealtime();
-        compute(jsonArray);
+        compute();
 
         if (CurrentTime - PrevTime < 30000) {// session gap = 30s
             checkPoints(CurrentTime - PrevTime);
@@ -213,6 +208,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         return false;
     }
+
 
 
 }
