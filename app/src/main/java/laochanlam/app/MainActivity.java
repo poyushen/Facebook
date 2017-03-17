@@ -1,37 +1,19 @@
 package laochanlam.app;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Stack;
@@ -48,9 +30,7 @@ public class MainActivity extends AppCompatActivity {
     Stack ViewItem = new Stack();
     private Button startButton;
     private TextView textMsg;
-    public String jjarray="";
-    public GlobalTouchService touchService;
-
+    public String attraction="";
 
     TextView view_for_5sec,view_for_10sec,view_for_30sec;
 
@@ -60,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.Startbutton);
         textMsg = (TextView) findViewById(R.id.textMsg);
+
+        read_attraction();
 
         handler = new Handler() {
             @Override
@@ -74,42 +56,36 @@ public class MainActivity extends AppCompatActivity {
             {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
                 startActivity(intent);
+                Bundle attraction_bundle = new Bundle();
+                attraction_bundle.putString("attraction_key", attraction);
+                globalService.putExtras(attraction_bundle);
             }
             else
+            {
                 globalService = new Intent(this, GlobalTouchService.class);
-        } else globalService = new Intent(this,GlobalTouchService.class);
-
-        readfile();
-        
-        //Intent serviceIntent=new Intent(this,GlobalTouchService.class);
-        //this.bindService(serviceIntent,connection,Context.BIND_AUTO_CREATE);
-
+                Bundle attraction_bundle = new Bundle();
+                attraction_bundle.putString("attraction_key", attraction);
+                globalService.putExtras(attraction_bundle);
+            }
+        }
+        else
+        {   globalService = new Intent(this,GlobalTouchService.class);
+            Bundle attraction_bundle = new Bundle();
+            attraction_bundle.putString("attraction_key", attraction);
+            globalService.putExtras(attraction_bundle);
+        }
     }
 
-   /* public ServiceConnection connection=new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            touchService=((GlobalTouchService.MyBinder)service).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-        }
-    };*/
-
-
-
-    public void readfile()
+    public void read_attraction()
     {
         BufferedReader reader=null;
         try{
-            reader =new BufferedReader(new InputStreamReader(getAssets().open("jarray.json")));
-            String mLine=reader.readLine();
+            reader =new BufferedReader(new InputStreamReader(getAssets().open("attraction.json")));
+            String attractionLine=reader.readLine();
 
-            while (mLine!=null){
-                jjarray+=mLine;
-                mLine=reader.readLine();
+            while (attractionLine!=null){
+                attraction+=attractionLine;
+                attractionLine=reader.readLine();
             }
         }catch (IOException e)
         {
@@ -124,15 +100,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }
-        Log.e("read",jjarray);
-
-        try {
-            JSONArray jsonArray = new JSONArray(jjarray);
-
-        }catch (JSONException e)
-        {
-            e.printStackTrace();
         }
     }
 

@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -21,65 +20,36 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Objects;
 
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
 
-
     private String TAG = this.getClass().getSimpleName();
     private WindowManager mWindowManager;
     private LinearLayout touchLayout;
-
     private long TimeCounter = 0;
     private long PrevTime = 0;
+    private String attractionString;
+    private JSONArray attractionArray;
+    private JSONObject[] attractionObjects=new JSONObject[5];
 
-    /*public MyBinder mybinder=new MyBinder();
+    @Override
+    public int onStartCommand(Intent i, int flag, int id) {
+        Bundle b = i.getExtras();
+        attractionString=b.getString("attraction_key");
+        return START_STICKY;
+    }
 
-    public class MyBinder extends Binder {
-        public GlobalTouchService getService(){
-            return GlobalTouchService.this;
-        }
-    }*/
-
-    private String jarray="[\n" +
-            "{\"Id\":\"1\",\"Title\":\"Nagasaki\",\"Latitude\":\"20\",\"Longitude\":\"15\",\"Description\":\"Here is Nagasaki\"},\n" +
-            "{\"Id\":\"2\",\"Title\":\"Hakata\",\"Latitude\":\"32\",\"Longitude\":\"24\",\"Description\":\"Here is Hakata\"},\n" +
-            "{\"Id\":\"3\",\"Title\":\"Kumamoto\",\"Latitude\":\"40\",\"Longitude\":\"30\",\"Description\":\"Here is Kumamoto\"},\n" +
-            "{\"Id\":\"4\",\"Title\":\"Oita\",\"Latitude\":\"80\",\"Longitude\":\"60\",\"Description\":\"Here is Oita\"},\n" +
-            "{\"Id\":\"5\",\"Title\":\"Aso\",\"Latitude\":\"120\",\"Longitude\":\"90\",\"Description\":\"Here is Aso\"}\n" +
-            "]";
-
-    public JSONArray jsonArray;
-    public JSONObject[] jsonObjects=new JSONObject[5];
-    public int[] latitude=new int[5];
-    public int[] longitude=new int[5];
-    public double[] distance=new double[5];
-    public String[] id=new String [5];
-    public String[] title=new String[5];
-    public String[] description=new String[5];
-
-
-    public void compute(){
+    public void getAttractionObjects(){
         try
         {
-            jsonArray = new JSONArray(jarray);
-            for(int a=0;a<jsonArray.length();a++) {
-                jsonObjects[a]=jsonArray.getJSONObject(a);
-                latitude[a]=jsonObjects[a].getInt("Latitude");
-                longitude[a]=jsonObjects[a].getInt("Longitude");
-                distance[a]=Math.sqrt(Math.pow(latitude[a],2)+Math.pow(longitude[a],2));
-                id[a]=jsonObjects[a].getString("Id");
-                title[a]=jsonObjects[a].getString("Title");
-                description[a]=jsonObjects[a].getString("Description");
+            attractionArray = new JSONArray(attractionString);
+            for(int a=0;a<attractionArray.length();a++) {
+                attractionObjects[a]=attractionArray.getJSONObject(a);
             }
         }catch(JSONException e)
         {
@@ -121,10 +91,9 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         mWindowManager.addView(touchLayout , mParams);
         /**********************************Fake View****************************/
 
-
-
-
     }
+
+
 
     @Override
     public void onDestroy(){
@@ -157,11 +126,15 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             builder.setTitle(R.string.app_name);
             builder.setPositiveButton("關閉", null);
             builder.setIcon(R.drawable.ic_launcher);
-            for(int a=0;a<jsonArray.length();a++) {
-                if (distance[a] == msg.what * 5)
-                    builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機"+msg.what*5+"單位。\n已經到達"+title[a]);
+            try {
+                for(int a=0;a<attractionArray.length();a++) {
+                    if ((msg.what * 5) == Math.sqrt(Math.pow(attractionArray.getJSONObject(a).getInt("Latitude"), 2) + Math.pow(attractionArray.getJSONObject(a).getInt("Longitude"), 2))) {
+                        builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機" + msg.what*5 + "單位。\n已經到達" + attractionArray.getJSONObject(a).getString("Title"));
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            //builder.setMessage("您已經滑動手機 " + msg.what + " 秒。");
             AlertDialog AlertDialog = builder.create();
             AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             AlertDialog.show();
@@ -191,7 +164,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     public boolean onTouch (View v , MotionEvent event){
 
         long CurrentTime = SystemClock.elapsedRealtime();
-        compute();
+        getAttractionObjects();
 
         if (CurrentTime - PrevTime < 30000) {// session gap = 30s
             checkPoints(CurrentTime - PrevTime);
@@ -208,7 +181,4 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         return false;
     }
-
-
-
 }
