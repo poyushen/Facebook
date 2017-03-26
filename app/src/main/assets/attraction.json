@@ -1,7 +1,7 @@
 [
-{"Id":"1","Title":"Nagasaki","Latitude":"20","Longitude":"15","Description":"Here is Nagasaki"},
-{"Id":"2","Title":"Hakata","Latitude":"32","Longitude":"24","Description":"Here is Hakata"},
-{"Id":"3","Title":"Kumamoto","Latitude":"40","Longitude":"30","Description":"Here is Kumamoto"},
-{"Id":"4","Title":"Oita","Latitude":"80","Longitude":"60","Description":"Here is Oita"},
-{"Id":"5","Title":"Aso","Latitude":"120","Longitude":"90","Description":"Here is Aso"}
+{"Id":"1","Title":"Nagasaki","Latitude":"20","Longitude":"15","Description":"Here is Nagasaki","Image":"nagasaki"},
+{"Id":"2","Title":"Hakata","Latitude":"32","Longitude":"24","Description":"Here is Hakata","Image":"hakata"},
+{"Id":"3","Title":"Kumamoto","Latitude":"40","Longitude":"30","Description":"Here is Kumamoto","Image":"kumamoto"},
+{"Id":"4","Title":"Oita","Latitude":"80","Longitude":"60","Description":"Here is Oita","Image":"oita"},
+{"Id":"5","Title":"Aso","Latitude":"120","Longitude":"90","Description":"Here is Aso","Image":"aso"}
 ]

@@ -1,5 +1,7 @@
 package laochanlam.app;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -19,10 +21,13 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
+
+import java.util.List;
 import java.util.Objects;
 
 
@@ -33,6 +38,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     private LinearLayout touchLayout;
     private long TimeCounter = 0;
     private long PrevTime = 0;
+    private long CurrentTime=0;
     private String attractionString;
     private JSONArray attractionArray;
     private JSONObject[] attractionObjects=new JSONObject[5];
@@ -93,83 +99,90 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
     }
 
-
-
     @Override
     public void onDestroy(){
         if (mWindowManager != null){
-            if (touchLayout != null) mWindowManager.removeView(touchLayout);
+            if (touchLayout != null)
+                mWindowManager.removeView(touchLayout);
         }
-
         super.onDestroy();
     }
 
     Message msg;
 
+    private void checkPoints(long total,String foregroundAppName) {
+        long[] points = {5000, 10000, 30000,1000000000};
 
-    private void checkPoints(long change) {
-        long[] points = {5000, 10000, 30000};
-        TimeCounter += change;
-        Log.i(TAG, TimeCounter + " " + change);
         for (int i = 0; i < points.length; i++) {
-            if (TimeCounter < points[i]) return;
-            if (TimeCounter - change > points[i]) continue;
-            /**********************************Send Message to Activity****************************/
-            msg = new Message();
-            msg.what = (int) points[i] / 1000;
-            MainActivity.handler.sendMessage(msg);
-            /**********************************Send Message to Activity****************************/
 
-            /**********************************AlertDialog****************************/
+            if (total>points[i] && total<points[i+1]) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.app_name);
-            builder.setPositiveButton("關閉", null);
-            builder.setIcon(R.drawable.ic_launcher);
-            try {
-                for(int a=0;a<attractionArray.length();a++) {
-                    if ((msg.what * 5) == Math.sqrt(Math.pow(attractionArray.getJSONObject(a).getInt("Latitude"), 2) + Math.pow(attractionArray.getJSONObject(a).getInt("Longitude"), 2))) {
-                        builder.setMessage("您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機" + msg.what*5 + "單位。\n已經到達" + attractionArray.getJSONObject(a).getString("Title"));
+                /**********************************Send Message to Activity****************************/
+                msg = new Message();
+                msg.what = (int) total / 1000;
+                MainActivity.handler.sendMessage(msg);
+                /**********************************Send Message to Activity****************************/
+
+                /**********************************AlertDialog****************************/
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                Log.e("totaltime", "" + msg.what);
+                try {
+                    for (int a = 0; a < attractionArray.length(); a++) {
+                        if ((msg.what * 5) == Math.sqrt(Math.pow(attractionArray.getJSONObject(a).getInt("Latitude"), 2) + Math.pow(attractionArray.getJSONObject(a).getInt("Longitude"), 2))) {
+                            builder.setTitle(R.string.app_name);
+                            builder.setPositiveButton("關閉", null);
+                            builder.setIcon(R.drawable.ic_launcher);
+                            builder.setMessage("正在使用"+foregroundAppName+"\n您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機" + msg.what * 5 + "單位。\n已經到達" + attractionArray.getJSONObject(a).getString("Title"));
+                            AlertDialog AlertDialog = builder.create();
+                            AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                            AlertDialog.show();
+                        }
+
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+
+                /**********************************AlertDialog****************************/
+
+                /**********************************Notification****************************/
+                final int notifyID = 1;
+                final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                final Notification notification = new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("溫馨提示")
+                        .setContentText("您已經滑動手機 " + msg.what + " 秒。")
+                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                        .setAutoCancel(true)
+                        .build();
+                notificationManager.notify(notifyID, notification);
+                /**********************************Notification****************************/
+
+                return;
             }
-            AlertDialog AlertDialog = builder.create();
-            AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-            AlertDialog.show();
-
-            /**********************************AlertDialog****************************/
-
-            /**********************************Notification****************************/
-            final int notifyID = 1;
-            final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-            final Notification notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle("溫馨提示")
-                    .setContentText("您已經滑動手機 " + msg.what + " 秒。")
-                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
-                    .setAutoCancel(true)
-                    .build();
-            notificationManager.notify(notifyID, notification);
-            /**********************************Notification****************************/
-
-            return;
         }
     }
 
-
+    private long changetime=0;
+    private long totaltime=0;
     @Override
     public boolean onTouch (View v , MotionEvent event){
 
-        long CurrentTime = SystemClock.elapsedRealtime();
-        getAttractionObjects();
+        ActivityManager manager=(ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> tasks=manager.getRunningAppProcesses();
+        Log.e("serviceappname",tasks.get(0).processName);
 
-        if (CurrentTime - PrevTime < 30000) {// session gap = 30s
-            checkPoints(CurrentTime - PrevTime);
+        CurrentTime = SystemClock.elapsedRealtime();
+        getAttractionObjects();
+        changetime=CurrentTime-PrevTime;
+
+        if(PrevTime!=0) {
+            totaltime += changetime;
+            checkPoints(totaltime,tasks.get(0).processName);
         }
-        PrevTime = CurrentTime;
+        PrevTime=CurrentTime;
 
         Log.i("event",Float.toString(event.getY()));
 
@@ -178,7 +191,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             Log.i(TAG, Objects.toString(TimeCounter, null));
             Log.i(TAG, "Action" + event.getAction() + "\t X:" + event.getRawX() + "\t Y:" + event.getRawY());
         }
-
         return false;
     }
 }

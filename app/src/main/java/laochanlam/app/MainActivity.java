@@ -1,5 +1,7 @@
 package laochanlam.app;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Stack;
 
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e("start","start");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.Startbutton);
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void read_attraction()
     {
+
         BufferedReader reader=null;
         try{
             reader =new BufferedReader(new InputStreamReader(getAssets().open("attraction.json")));
@@ -134,5 +139,4 @@ public class MainActivity extends AppCompatActivity {
             textMsg.setText("Hello");
         }
     }
-
 }
