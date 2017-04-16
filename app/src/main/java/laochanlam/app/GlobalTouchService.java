@@ -3,32 +3,44 @@ package laochanlam.app;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
 import java.util.List;
 import java.util.Objects;
+
 
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
@@ -42,12 +54,28 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     private String attractionString;
     private JSONArray attractionArray;
     private JSONObject[] attractionObjects=new JSONObject[5];
+    private BroadcastReceiver mReceiver=new ScreenReceiver();
+    public boolean screenOff;
+    private SharedPreferences spref;
+    private SharedPreferences.Editor editor;
+
+   /* public void acquireWakeLock(){
+            PowerManager pm=(PowerManager)this.getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock wakeLock=pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"GlobalTouchService");
+            wakeLock.acquire();
+    }*/
+
 
     @Override
     public int onStartCommand(Intent i, int flag, int id) {
         Bundle b = i.getExtras();
         attractionString=b.getString("attraction_key");
+
+        screenOff=i.getBooleanExtra("screen_state",false);
+        Log.e("screenoff",""+screenOff);
+
         return START_STICKY;
+
     }
 
     public void getAttractionObjects(){
@@ -72,6 +100,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     @Override
     public void onCreate(){
         super.onCreate();
+        //acquireWakeLock();
+        spref=PreferenceManager.getDefaultSharedPreferences(this);
+        editor=spref.edit();
+        IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mReceiver,filter);
 
         /**********************************Fake View****************************/
         touchLayout = new LinearLayout(this);
@@ -108,11 +142,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         super.onDestroy();
     }
 
+
     Message msg;
+    private Button close;
 
     private void checkPoints(long total,String foregroundAppName) {
         long[] points = {5000, 10000, 30000,1000000000};
-
         for (int i = 0; i < points.length; i++) {
 
             if (total>points[i] && total<points[i+1]) {
@@ -124,15 +159,39 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 /**********************************Send Message to Activity****************************/
 
                 /**********************************AlertDialog****************************/
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 Log.e("totaltime", "" + msg.what);
+
+                //Dialog attractionDialog=new Dialog(this);
+                //attractionDialog.setContentView(R.layout.custom_dialog);
                 try {
                     for (int a = 0; a < attractionArray.length(); a++) {
+
                         if ((msg.what * 5) == Math.sqrt(Math.pow(attractionArray.getJSONObject(a).getInt("Latitude"), 2) + Math.pow(attractionArray.getJSONObject(a).getInt("Longitude"), 2))) {
+                            //attractionDialog.setTitle("Facebook-Slider");
+                            //attractionDialog.setCancelable(true);
+                            //TextView alert_text=(TextView)attractionDialog.findViewById(R.id.dialog_text);
+                            //alert_text.setText("正在使用"+foregroundAppName+"\n您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機" + msg.what * 5 + "單位。\n已經到達" + attractionArray.getJSONObject(a).getString("Title"));
+                            //ImageView alert_image=(ImageView)attractionDialog.findViewById(R.id.dialog_image);
+                            //alert_image.setImageResource(R.drawable.aso);
+                           // Button alert_button=(Button)attractionDialog.findViewById(R.id.dialog_button);
+                           /*alert_button.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                }
+                            });*/
+                            //attractionDialog.show();
+                            //attractionDialog.setContentView(R.layout.attractiondialog);
+
+                            LayoutInflater inflater=(LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                            View v=inflater.inflate(R.layout.custom_dialog,null);
+                            ImageView image=(ImageView)v.findViewById(R.id.dialog_image);
+                            image.setImageResource(R.drawable.hakata);
                             builder.setTitle(R.string.app_name);
                             builder.setPositiveButton("關閉", null);
                             builder.setIcon(R.drawable.ic_launcher);
+                            builder.setView(v);
                             builder.setMessage("正在使用"+foregroundAppName+"\n您已經滑動手機 " + msg.what + " 秒。\n您已經滑動手機" + msg.what * 5 + "單位。\n已經到達" + attractionArray.getJSONObject(a).getString("Title"));
                             AlertDialog AlertDialog = builder.create();
                             AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
@@ -179,9 +238,29 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         changetime=CurrentTime-PrevTime;
 
         if(PrevTime!=0) {
-            totaltime += changetime;
-            checkPoints(totaltime,tasks.get(0).processName);
-        }
+
+            /*if(fbName!=tasks.get(0).processName){
+                Log.e("name",fbName);
+                totaltime+=0;
+                checkPoints(totaltime, tasks.get(0).processName);
+            }*/
+           // else{
+                totaltime += changetime;
+                checkPoints(totaltime, tasks.get(0).processName);
+
+                float prevAppTime = spref.getFloat(tasks.get(0).processName, 0);
+                Log.e("prevTime", "" + prevAppTime);
+
+                Log.e("changeTime", "" + changetime);
+                Log.e("totalTime", "" + totaltime);
+                editor.putFloat(tasks.get(0).processName, prevAppTime + changetime);
+                editor.commit();
+                float a = spref.getFloat("com.facebook.katana", 0);
+                float b = spref.getFloat("com.instagram.android", 0);
+                Log.e("fb time", "" + a);
+                Log.e("ig time", "" + b);
+            }
+        //}
         PrevTime=CurrentTime;
 
         Log.i("event",Float.toString(event.getY()));
