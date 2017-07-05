@@ -1,7 +1,19 @@
 [
-{"Id":"1","Title":"Nagasaki","Latitude":"20","Longitude":"15","Description":"Here is Nagasaki","Image":"nagasaki"},
-{"Id":"2","Title":"Hakata","Latitude":"40","Longitude":"30","Description":"Here is Hakata","Image":"hakata"},
-{"Id":"3","Title":"Kumamoto","Latitude":"60","Longitude":"45","Description":"Here is Kumamoto","Image":"kumamoto"},
-{"Id":"4","Title":"Oita","Latitude":"80","Longitude":"60","Description":"Here is Oita","Image":"oita"},
-{"Id":"5","Title":"Aso","Latitude":"120","Longitude":"90","Description":"Here is Aso","Image":"aso"}
+{"Id":"0","Title":"Hakata","Latitude":"20","Longitude":"15","Description":"Here is Aso","Image":"aso"},
+{"Id":"1","Title":"Nakasaki_chineseRoad","Latitude":"40","Longitude":"30","Description":"Here is Nagasaki","Image":"nagasaki"},
+{"Id":"2","Title":"Nagasaki_glassBridge","Latitude":"60","Longitude":"45","Description":"Here is Hakata","Image":"hakata"},
+{"Id":"3","Title":"Nagasaki_David","Latitude":"80","Longitude":"60","Description":"Here is Kumamoto","Image":"kumamoto"},
+{"Id":"4","Title":"Nagasaki_mom","Latitude":"100","Longitude":"75","Description":"Here is Oita","Image":"oita"},
+{"Id":"5","Title":"Kumamoto_small","Latitude":"120","Longitude":"90","Description":"Here is Aso","Image":"aso"},
+{"Id":"6","Title":"Kumamoto_bear","Latitude":"140","Longitude":"105","Description":"Here is Aso","Image":"aso"},
+{"Id":"7","Title":"Yufuin","Latitude":"160","Longitude":"120","Description":"Here is Aso","Image":"aso"},
+{"Id":"8","Title":"Yufuin_store1","Latitude":"180","Longitude":"135","Description":"Here is Aso","Image":"aso"},
+{"Id":"9","Title":"Yufuin_store2","Latitude":"200","Longitude":"150","Description":"Here is Aso","Image":"aso"},
+{"Id":"10","Title":"GoldLake","Latitude":"220","Longitude":"165","Description":"Here is Aso","Image":"aso"},
+{"Id":"11","Title":"Shrine","Latitude":"240","Longitude":"180","Description":"Here is Aso","Image":"aso"},
+{"Id":"12","Title":"Yanagawa","Latitude":"260","Longitude":"195","Description":"Here is Aso","Image":"aso"},
+{"Id":"13","Title":"Yanagawa_store","Latitude":"280","Longitude":"210","Description":"Here is Aso","Image":"aso"},
+{"Id":"14","Title":"Taisha","Latitude":"300","Longitude":"225","Description":"Here is Aso","Image":"aso"},
+{"Id":"15","Title":"Taisha_store","Latitude":"320","Longitude":"240","Description":"Here is Aso","Image":"aso"}
+
 ]

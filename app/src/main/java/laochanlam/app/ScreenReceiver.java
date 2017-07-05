@@ -24,6 +24,12 @@ public class ScreenReceiver extends BroadcastReceiver {
         }
         Intent i=new Intent(context,GlobalTouchService.class);
         i.putExtra("screen_state",screenoff);
-        context.startService(i);
+        if(screenoff==false) {
+            context.startService(i);
+        }
+        if(screenoff==true)
+        {
+            context.stopService(i);
+        }
     }
 }

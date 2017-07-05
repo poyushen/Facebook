@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.Startbutton);
         textMsg = (TextView) findViewById(R.id.textMsg);
@@ -127,19 +128,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void ResetButtonClicked(View v){
-        if (ServiceFlag) {
-            ServiceFlag = false;
-            while (!ViewItem.empty())
-            {
-                relativeLayout.removeView((View)ViewItem.peek());
-                ViewItem.pop();
-            }
-            Log.i(TAG, "Stop");
-            stopService(globalService);
-            Toast.makeText(this, "Stop Service", Toast.LENGTH_SHORT).show();
-            startButton.setText("Start");
-            textMsg.setText("Hello");
-        }
-    }
+
 }
