@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/background"
+    android:background="@mipmap/space"
     tools:context=".MainActivity">
 
-    <Button
-        android:layout_width="300px"
-        android:layout_height="150px"
-        android:text="Start"
-        android:onClick="StartbuttonClicked"
-        android:id="@+id/Startbutton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="15dp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
+        <TextView
         android:text="Hello"
         android:layout_width="200px"
         android:layout_height="200px"
@@ -29,5 +23,48 @@
         android:layout_alignParentStart="true" />
 
 
+        <TextView
+            android:text="time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/time"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="11dp" />
 
-</RelativeLayout>
+        <Button
+            android:text="more"
+            android:textSize="8dp"
+            android:onClick="moreButtonClicked"
+            android:layout_width="50dp"
+            android:layout_height="35dp"
+            android:id="@+id/more"
+            android:layout_marginTop="15dp"
+            android:layout_below="@+id/dis"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:text="dis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dis"
+            android:layout_marginTop="12dp"
+            android:layout_below="@+id/time"
+            android:layout_alignStart="@+id/time" />
+
+        <Button
+            android:layout_width="200px"
+            android:layout_height="100px"
+            android:text="start"
+            android:onClick="StartbuttonClicked"
+            android:id="@+id/Startbutton"
+            android:layout_marginEnd="12dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="23dp" />
+
+    </RelativeLayout>
+
+
+</LinearLayout>

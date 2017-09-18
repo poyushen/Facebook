@@ -25,13 +25,17 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.VelocityTrackerCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
@@ -43,7 +47,10 @@ import org.json.JSONArray;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import static android.R.attr.action;
 
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
@@ -68,27 +75,19 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     @Override
     public int onStartCommand(Intent i, int flag, int id) {
         if(i!=null) {
-            Bundle b = i.getExtras();
-            Log.d("test", "test");
-            attractionString = b.getString("attraction_key");//bug
+            if(attractionString==null) {
+                Bundle b = i.getExtras();
+                attractionString = b.getString("attraction_key");
+            }
         }
-
         screenOff=i.getBooleanExtra("screen_state",false);
-        Log.e("screenoff",""+screenOff);
-
         return START_REDELIVER_INTENT;
-
     }
 
     public void getAttractionObjects(){
         try
         {
-            Log.e("json",attractionString);
             attractionArray = new JSONArray(attractionString);
-
-            /*for(int a=0;a<attractionArray.length();a++) {
-                attractionObjects[a]=attractionArray.getJSONObject(a);
-            }*/
         }catch(JSONException e)
         {
             e.printStackTrace();
@@ -104,7 +103,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     @Override
     public void onCreate(){
         super.onCreate();
-        //acquireWakeLock();
         spref=PreferenceManager.getDefaultSharedPreferences(this);
         editor=spref.edit();
         IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_ON);
@@ -113,25 +111,21 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         /**********************************Fake View****************************/
         touchLayout = new LinearLayout(this);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams( 1,1);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams( WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.MATCH_PARENT);
         touchLayout.setLayoutParams(lp);
-        touchLayout.setBackgroundColor(Color.GREEN);
         touchLayout.setOnTouchListener(this);
 
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-
         WindowManager.LayoutParams mParams = new WindowManager.LayoutParams(
                 1,
                 1,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                         WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSPARENT);
 
         mParams.gravity = Gravity.LEFT | Gravity.TOP;
-        Log.i(TAG, "add View");
-
         mWindowManager.addView(touchLayout , mParams);
         /**********************************Fake View****************************/
 
@@ -165,12 +159,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
     private void checkPoints(float total,String foregroundAppName) {
         long[] points={5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,10000000};
-        /*long[] points = new long[17];
-        for(int j=0;j<16;j++)
-        {
-            points[j]=5000*j;
-        }
-        points[16]=1000000000;*/
+
         for (int i = 0; i < points.length; i++) {
 
             if (total>points[i] && total<points[i+1]) {
@@ -183,20 +172,11 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
                 /**********************************AlertDialog****************************/
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                Log.e("total", "" + msg.what);
 
-
-
-                Log.e("img",""+imageId[1]);
-                Log.e("R",""+R.drawable.a1);
-
-                //int imageId=getResources().getIdentifier(k,"drawable",this.getPackageName());
                 try {
                     for (int a = 0; a < 16; a++) {
 
-
-
-                        if ((msg.what * 5) == Math.sqrt(Math.pow(attractionArray.getJSONObject(a).getInt("Latitude"), 2) + Math.pow(attractionArray.getJSONObject(a).getInt("Longitude"), 2))) {
+                        if ((msg.what * 70) == distance(attractionArray.getJSONObject(a).getDouble("Latitude"),attractionArray.getJSONObject(a).getDouble("Longitude"),24,121,"K")) {
 
                             LayoutInflater inflater=(LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                             View v=inflater.inflate(R.layout.custom_dialog,null);
@@ -222,27 +202,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 /**********************************Notification****************************/
                 final int notifyID = 1;
                 final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                Intent startIntent=new Intent(this,NotificationReceiver.class);
-                Bundle startBundle=new Bundle();
-                startBundle.putInt("flag",1);
-                startIntent.putExtras(startBundle);
-                PendingIntent pendingYesIntent=PendingIntent.getActivity(this,0,startIntent,0);
-
-                Intent stopIntent=new Intent(this,NotificationReceiver.class);
-                Bundle stopBundle=new Bundle();
-                stopBundle.putInt("flag",0);
-                stopIntent.putExtras(stopBundle);
-                PendingIntent pendingStopIntent=PendingIntent.getActivity(this,0,stopIntent,0);
-
                 final Notification notification = new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle("溫馨提示")
                         .setContentText("您已經滑動手機 " + msg.what + " 秒。")
                         .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
                         .setAutoCancel(true)
-                        .addAction(R.drawable.ic_launcher,"start",pendingYesIntent)
-                        .addAction(R.drawable.ic_launcher,"stop",pendingStopIntent)
                         .build();
                 notificationManager.notify(notifyID, notification);
                 /**********************************Notification****************************/
@@ -252,22 +217,45 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         }
     }
 
+    private static double distance(double lat1, double lon1, double lat2, double lon2, String unit){
+        double theta=lon1-lon2;
+        double dist=Math.sin(deg_to_rad(lat1))*Math.sin(deg_to_rad(lat2))+Math.cos(deg_to_rad(lat1))*Math.cos(deg_to_rad(lat2))*Math.cos(deg_to_rad(theta));
+        dist=Math.acos(dist);
+        dist=rad_to_deg(dist);
+        dist=dist * 60 * 1.1515;
+        if(unit=="K"){
+            dist=dist*1.109344;
+        }
+        if(unit=="N"){
+            dist=dist*0.8684;
+        }
+        return dist;
+    }
+    private static double deg_to_rad(double deg)
+    {
+        return (deg*Math.PI / 180.0);
+    }
+    private static double rad_to_deg(double rad)
+    {
+        return (rad*180.0 / Math.PI);
+    }
+
     private long changetime=0;
     private float totaltime=0;
 
     @Override
     public boolean onTouch (View v , MotionEvent event){
 
+
         ActivityManager manager=(ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> tasks=manager.getRunningAppProcesses();
-        Log.e("serviceappname",tasks.get(0).processName);
+
+        getAttractionObjects();
 
         CurrentTime = SystemClock.elapsedRealtime();
-        getAttractionObjects();
         changetime=CurrentTime-PrevTime;
 
         if(PrevTime!=0) {
-
 
             float prevAppTime = spref.getFloat(tasks.get(0).processName, 0);
             Log.e("prevAppTime", "" + prevAppTime);
@@ -277,27 +265,16 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             editor.commit();
             float fbTime = spref.getFloat("com.facebook.katana", 0);
             float igTime = spref.getFloat("com.instagram.android", 0);
-            float homeTime=spref.getFloat("com.asus.launcher",0);
-
-
 
             totaltime = fbTime+igTime;
             Log.e("fb time", "" + fbTime);
             Log.e("ig time", "" + igTime);
-            //Log.e("home time",""+homeTime);
             Log.e("total time",""+totaltime);
             checkPoints(totaltime, tasks.get(0).processName);
         }
 
         PrevTime=CurrentTime;
 
-        /*Log.i("event",Float.toString(event.getY()));
-
-        Log.i(TAG, "Touch event: " + event.toString());
-        if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
-            Log.i(TAG, Objects.toString(TimeCounter, null));
-            Log.i(TAG, "Action" + event.getAction() + "\t X:" + event.getRawX() + "\t Y:" + event.getRawY());
-        }*/
         return false;
     }
 }

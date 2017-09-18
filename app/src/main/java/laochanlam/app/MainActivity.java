@@ -6,15 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -24,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -36,10 +44,10 @@ public class MainActivity extends AppCompatActivity {
     boolean ServiceFlag = false;
     Stack ViewItem = new Stack();
     private Button startButton;
+    private Button moreButton;
     private TextView textMsg;
     public String attraction="";
 
-    TextView view_for_5sec,view_for_10sec,view_for_30sec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.Startbutton);
+        moreButton = (Button) findViewById(R.id.more);
         textMsg = (TextView) findViewById(R.id.textMsg);
         read_attraction();
 
@@ -67,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 Bundle attraction_bundle = new Bundle();
                 attraction_bundle.putString("attraction_key", attraction);
                 globalService.putExtras(attraction_bundle);
+
             }
             else
             {
@@ -83,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
             globalService.putExtras(attraction_bundle);
         }
     }
+
+
+
 
     public void read_attraction()
     {
@@ -112,6 +125,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void moreButtonClicked(View v){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, Information.class);
+        startActivity(intent);
+    }
+
 
     public void StartbuttonClicked(View v){
         ServiceFlag = !ServiceFlag;
@@ -120,11 +139,13 @@ public class MainActivity extends AppCompatActivity {
             startService(globalService);
             Toast.makeText(this, "Start Service", Toast.LENGTH_SHORT).show();
             startButton.setText("Stop");
+
         } else {
             Log.i(TAG, "Stop");
             stopService(globalService);
             Toast.makeText(this, "Stop Service", Toast.LENGTH_SHORT).show();
             startButton.setText("Start");
+
         }
     }
 
