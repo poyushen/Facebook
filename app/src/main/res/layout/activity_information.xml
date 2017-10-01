@@ -46,4 +46,85 @@
         android:layout_below="@+id/imageView3"
         android:layout_alignStart="@+id/imageView3" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fbtime"
+        android:layout_above="@+id/imageView2"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="19dp"
+        android:textSize="20dp"
+        android:text="fbTime"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/igtime"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_alignStart="@+id/fbtime"
+        android:layout_marginTop="21dp"
+        android:textSize="20dp"
+        android:text="igTime"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/linetime"
+        android:layout_centerVertical="true"
+        android:layout_alignStart="@+id/igtime"
+        android:textSize="20dp"
+        android:text="lineTime"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/otherstime"
+        android:layout_alignTop="@+id/imageView4"
+        android:layout_alignStart="@+id/linetime"
+        android:layout_marginTop="20dp"
+        android:textSize="20dp"
+        android:text="othersTime"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/igdis"
+        android:layout_alignBaseline="@+id/igtime"
+        android:layout_alignBottom="@+id/igtime"
+        android:layout_alignStart="@+id/fbdis"
+        android:textSize="20dp"
+        android:text="igDis"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/linedis"
+        android:layout_alignBaseline="@+id/linetime"
+        android:layout_alignBottom="@+id/linetime"
+        android:layout_alignStart="@+id/igdis"
+        android:textSize="20dp"
+        android:text="lineDis"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fbdis"
+        android:layout_marginStart="24dp"
+        android:textSize="20dp"
+        android:text="fbDis"
+        android:layout_alignBaseline="@+id/fbtime"
+        android:layout_alignBottom="@+id/fbtime"
+        android:layout_toEndOf="@+id/otherstime" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/othersdis"
+        android:textSize="20dp"
+        android:text="othersDis"
+        android:layout_alignBaseline="@+id/otherstime"
+        android:layout_alignBottom="@+id/otherstime"
+        android:layout_alignStart="@+id/linedis" />
+
 </RelativeLayout>

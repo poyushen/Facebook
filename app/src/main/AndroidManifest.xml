@@ -13,10 +13,9 @@
     <uses-permission android:name="android.permission.GET_TASKS" />
 
 
-
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:supportsRtl="true"
@@ -29,9 +28,11 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".GlobalTouchService"></service>
+        <service android:name=".GlobalTouchService" />
 
-        <activity android:name=".Information"></activity>
+        <activity android:name=".Information" />
+
+
     </application>
 
 </manifest>
