@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         read_attraction();//read json file
 
 
+
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -112,12 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    public void moreButtonClicked(View v){
-        Intent intent = new Intent();
-        intent.setClass(MainActivity.this, Information.class);//to information page
-        startActivity(intent);
     }
 
     public void startButtonClicked(View v) {

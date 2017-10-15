@@ -43,7 +43,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     public boolean screenOff;
     private SharedPreferences timeData;
     private SharedPreferences.Editor editor;
-    private int[] imageId=new int[20];
+    private int[] imageId=new int[23];
 
     private long prevTime = 0;
     private long currentTime = 0;
@@ -51,8 +51,9 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     private float totaltime = 0;
     private float fbTime = 0;
     private float igTime = 0;
+    private float totalDist_pixel = 0;
     private boolean reset;
-    private boolean[] flag = new boolean[20];
+    private boolean[] flag = new boolean[23];
 
 
     @Override
@@ -119,7 +120,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         mWindowManager.addView(touchLayout , mParams);
         /**********************************Fake View****************************/
 
-        for(int n=0;n<20;n++) {
+        for(int n = 0; n < 23;n++) {
             imageId[n] = getResources().getIdentifier("a" + n, "mipmap", this.getPackageName());
             flag[n] = false;
         }
@@ -141,7 +142,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
     private void checkPoints(float total, String foregroundAppName) {
 
-        long[] points = {0, 5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000,10000000};
+        long[] points = {0, 5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000,105000,110000,115000,10000000};
 
         for (int i = 1; i < points.length - 1; i++) {
 
@@ -157,9 +158,9 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                 try {
-                    for (int a = 1; a < 20; a++) {
+                    for (int a = 1; a < 23; a++) {
 
-                        if ((msg.what * 5) >= attractionArray.getJSONObject(a).getDouble("distance") && (msg.what * 5) <= attractionArray.getJSONObject(a+1).getDouble("distance") && flag[a] == false) {
+                        if ((totalDist_pixel * 1.5) >= attractionArray.getJSONObject(a).getDouble("distance") * 100000 && (totalDist_pixel * 1.5) <= attractionArray.getJSONObject(a+1).getDouble("distance") * 100000 && flag[a] == false) {
                             flag[a] = true;
 
                             LayoutInflater inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -212,6 +213,20 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         currentTime = SystemClock.elapsedRealtime();
         changetime = currentTime - prevTime;
 
+        if(changetime < 21205)
+        {
+            totalDist_pixel += 0.01*changetime + 167.5;
+            Log.e("1", ""+0.01*changetime + 167.5);
+        }
+        else if(changetime > 21205 && changetime < 52525)
+        {
+            totalDist_pixel += 0.02*changetime +327.65;
+        }
+        else if(changetime > 52525)
+        {
+            totalDist_pixel += 1306.69;
+        }
+
         if(prevTime != 0) {
             if(reset == false)
             {
@@ -234,6 +249,8 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             }
         }
         prevTime = currentTime;
+
+        Log.e("dis",""+totalDist_pixel);
         return false;
     }
 }

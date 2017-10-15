@@ -30,8 +30,6 @@
 
         <service android:name=".GlobalTouchService" />
 
-        <activity android:name=".Information" />
-
 
     </application>
 
