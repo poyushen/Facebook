@@ -5,19 +5,26 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.support.v4.app.AppLaunchChecker;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.TimeUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +36,9 @@ import android.widget.LinearLayout;
 import org.json.JSONException;
 import org.json.JSONArray;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
@@ -39,45 +49,50 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
     private String attractionString;
     private JSONArray attractionArray;
-    private BroadcastReceiver screenReceiver = new ScreenReceiver();
-    public boolean screenOff;
-    private SharedPreferences timeData;
+    private SharedPreferences timedisData;
     private SharedPreferences.Editor editor;
+
     private int[] imageId=new int[23];
 
     private long prevTime = 0;
-    private long currentTime = 0;
-    private long changetime = 0;
-    private float totaltime = 0;
+    private long currentTime;
+    private long changetime;
+
+
     private float fbTime = 0;
     private float igTime = 0;
-    private float totalDist_pixel = 0;
-    private boolean reset;
-    private boolean[] flag = new boolean[23];
+    private float lineTime = 0;
+    private float ytTime = 0;
+
+    private float fbDis = 0;
+    private float igDis = 0;
+    private float lineDis = 0;
+    private float ytDis = 0;
 
 
     @Override
     public int onStartCommand(Intent i, int flag, int id) {
         if(i != null) {
-            if(attractionString == null) {
+            if(attractionString == null) { //get string from Activity
                 Bundle b = i.getExtras();
                 attractionString = b.getString("attraction_key");
             }
         }
 
-        screenOff = i.getBooleanExtra("screen_state", false);
+        //screenOff = i.getBooleanExtra("screen_state", false);
         return START_REDELIVER_INTENT;
     }
 
-    public void getAttractionObjects(){
+    public void buildArray(){
         try
         {
-            attractionArray = new JSONArray(attractionString);
+            attractionArray = new JSONArray(attractionString);//change string to array
         }catch(JSONException e)
         {
             e.printStackTrace();
         }
     }
+
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -89,16 +104,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     public void onCreate(){
         super.onCreate();
 
-        reset = false;
-        fbTime = 0;
-        igTime = 0;
-        totaltime = 0;
-        timeData = PreferenceManager.getDefaultSharedPreferences(this);
-        editor = timeData.edit();
+        timedisData = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = timedisData.edit();
 
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(screenReceiver, filter);
+        //IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        //filter.addAction(Intent.ACTION_SCREEN_OFF);
+        //registerReceiver(screenReceiver, filter);
 
         /**********************************Fake View****************************/
         touchLayout = new LinearLayout(this);
@@ -120,9 +131,8 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         mWindowManager.addView(touchLayout , mParams);
         /**********************************Fake View****************************/
 
-        for(int n = 0; n < 23;n++) {
+        for(int n = 0; n < 23; n++) {
             imageId[n] = getResources().getIdentifier("a" + n, "mipmap", this.getPackageName());
-            flag[n] = false;
         }
 
     }
@@ -133,124 +143,169 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             if (touchLayout != null)
                 mWindowManager.removeView(touchLayout);
         }
-        unregisterReceiver(screenReceiver);
+        //unregisterReceiver(screenReceiver);
         super.onDestroy();
     }
 
 
     Message msg;
 
-    private void checkPoints(float total, String foregroundAppName) {
+    private void checkPoints(float totalTime, float totalDis) {
 
-        long[] points = {0, 5000,10000,15000,20000,25000,30000,35000,40000,45000,50000,55000,60000,65000,70000,75000,80000,85000,90000,95000,100000,105000,110000,115000,10000000};
+        /**********************************Send Message to Activity****************************/
+        msg = new Message();
+        msg.what = (int) totalTime / 1000;
+        MainActivity.handler.sendMessage(msg);
+        /**********************************Send Message to Activity****************************/
 
-        for (int i = 1; i < points.length - 1; i++) {
+        /**********************************AlertDialog****************************/
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            if (total > points[i] && total < points[i+1]) {
+        try {
+            for (int a = 1; a < 23; a++) {
+                if ((totalDis / 15000) >= attractionArray.getJSONObject(a).getDouble("distance")  && (totalDis / 15000) <= attractionArray.getJSONObject(a+1).getDouble("distance") && timedisData.getBoolean("imageid"+a, false) == false) {
 
-                /**********************************Send Message to Activity****************************/
-                msg = new Message();
-                msg.what = (int) total / 1000;
-                MainActivity.handler.sendMessage(msg);
-                /**********************************Send Message to Activity****************************/
+                    editor.putBoolean("imageid"+a, true);
+                    editor.commit();
 
-                /**********************************AlertDialog****************************/
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-                try {
-                    for (int a = 1; a < 23; a++) {
-
-                        if ((totalDist_pixel * 1.5) >= attractionArray.getJSONObject(a).getDouble("distance") * 100000 && (totalDist_pixel * 1.5) <= attractionArray.getJSONObject(a+1).getDouble("distance") * 100000 && flag[a] == false) {
-                            flag[a] = true;
-
-                            LayoutInflater inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                            View v = inflater.inflate(R.layout.custom_dialog,null);
-                            ImageView image = (ImageView)v.findViewById(R.id.dialog_image);
-                            image.setImageResource(imageId[a]);
-                            builder.setTitle(R.string.app_name);
-                            builder.setPositiveButton("關閉", null);
-                            builder.setIcon(R.drawable.ic_launcher);
-                            builder.setView(v);
-                            builder.setMessage("Now using  " + foregroundAppName + "\nfor  " + msg.what + " s\ndistance  " + msg.what * 5 + " km。\narriving  " + attractionArray.getJSONObject(a).getString("Title"));
-                            AlertDialog AlertDialog = builder.create();
-                            AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-                            AlertDialog.show();
-                        }
-
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    LayoutInflater inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View v = inflater.inflate(R.layout.custom_dialog,null);
+                    ImageView image = (ImageView)v.findViewById(R.id.dialog_image);
+                    image.setImageResource(imageId[a]);
+                    builder.setTitle(R.string.app_name);
+                    builder.setPositiveButton("關閉", null);
+                    builder.setIcon(R.drawable.ic_launcher);
+                    builder.setView(v);
+                    builder.setMessage("Arriving " + attractionArray.getJSONObject(a).getString("Title"));
+                    AlertDialog AlertDialog = builder.create();
+                    AlertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                    AlertDialog.show();
                 }
-
-                /**********************************AlertDialog****************************/
-
-                /**********************************Notification****************************/
-                final int notifyID = 1;
-                final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                final Notification notification = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("溫馨提示")
-                        .setContentText("您已經滑動手機 " + msg.what + " 秒。")
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
-                        .setAutoCancel(true)
-                        .build();
-                notificationManager.notify(notifyID, notification);
-                /**********************************Notification****************************/
-
-                return;
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+        /**********************************AlertDialog****************************/
+
+        /**********************************Notification****************************/
+        final int notifyID = 1;
+        final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        final Notification notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle("溫馨提示")
+                .setContentText("您已經滑動手機 " + msg.what + " 秒。")
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(notifyID, notification);
+        /**********************************Notification****************************/
+
+        return;
+
+
     }
 
     @Override
     public boolean onTouch (View v , MotionEvent event){
 
-        ActivityManager manager = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> tasks = manager.getRunningAppProcesses();
+        //ActivityManager manager = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
+        //List<ActivityManager.RunningAppProcessInfo> tasks = manager.getRunningAppProcesses();
 
-        getAttractionObjects();
+        UsageStatsManager um = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
+        long endTime = System.currentTimeMillis();
+        long beginTime = 0;
+        List<UsageStats>stats = um.queryUsageStats(UsageStatsManager.INTERVAL_MONTHLY, beginTime, endTime);
+
+
+        String app = "";
+        String appName = "";
+
+        if(stats != null){
+            SortedMap<Long, UsageStats>sortedMap = new TreeMap<Long, UsageStats>();
+            for(UsageStats us : stats){
+                sortedMap.put(us.getLastTimeUsed(), us);
+            }
+            if(sortedMap != null && !sortedMap.isEmpty()){
+                app = sortedMap.get(sortedMap.lastKey()).getPackageName();
+            }
+        }
+
+
+        if(app.toLowerCase().contains("facebook".toLowerCase()))
+            appName = "facebook";
+        if(app.toLowerCase().contains("instagram".toLowerCase()))
+            appName = "instagram";
+        if(app.toLowerCase().contains("line".toLowerCase()))
+            appName = "line";
+        if(app.toLowerCase().contains("youtube".toLowerCase()))
+            appName = "youtube";
+
+        buildArray();
 
         currentTime = SystemClock.elapsedRealtime();
         changetime = currentTime - prevTime;
 
-        if(changetime < 21205)
-        {
-            totalDist_pixel += 0.01*changetime + 167.5;
-            Log.e("1", ""+0.01*changetime + 167.5);
-        }
-        else if(changetime > 21205 && changetime < 52525)
-        {
-            totalDist_pixel += 0.02*changetime +327.65;
-        }
-        else if(changetime > 52525)
-        {
-            totalDist_pixel += 1306.69;
-        }
 
         if(prevTime != 0) {
-            if(reset == false)
-            {
-                editor.putFloat(tasks.get(0).processName, 0);
-                editor.commit();
-                fbTime = timeData.getFloat("com.facebook.katana", 0);
-                igTime = timeData.getFloat("com.instagram.android", 0);
-                reset = true;
-            }
-            else {
-                float prevAppTime = timeData.getFloat(tasks.get(0).processName, 0);
 
-                editor.putFloat(tasks.get(0).processName, prevAppTime + changetime);
-                editor.commit();
-                fbTime = timeData.getFloat("com.facebook.katana", 0);
-                igTime = timeData.getFloat("com.instagram.android", 0);
+            float prevAppTime = timedisData.getFloat(appName + "Time", 0);
+            float prevAppDis = timedisData.getFloat(appName + "Dis", 0);
 
-                totaltime = fbTime + igTime;
-                checkPoints(totaltime, tasks.get(0).processName);
-            }
+            Log.e("ch",""+changetime);
+            Log.e("app",appName);
+
+            editor.putFloat(appName + "Time", prevAppTime + changetime);
+            editor.putFloat(appName + "Dis", prevAppDis + (float)computeDis(changetime));
+            editor.putFloat("Time",timedisData.getFloat("Time", 0) + changetime);
+            editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float)computeDis(changetime));
+            editor.commit();
+
+            /*fbTime = timedisData.getFloat("facebookTime", 0);
+            igTime = timedisData.getFloat("instagramTime", 0);
+            lineTime = timedisData.getFloat("lineTime", 0);
+            ytTime = timedisData.getFloat("youtubeTime", 0);
+
+            fbDis = timedisData.getFloat("facebookDis", 0);
+            igDis = timedisData.getFloat("instagramDis", 0);
+            lineDis = timedisData.getFloat("lineDis", 0);
+            ytDis = timedisData.getFloat("youtubeDis", 0);*/
+
         }
         prevTime = currentTime;
 
-        Log.e("dis",""+totalDist_pixel);
+        checkPoints(timedisData.getFloat("Time", 0), timedisData.getFloat("Dis", 0));
+
+
+        sendBroadcast("time",timedisData.getFloat("Time", 0));
+        sendBroadcast("dis",timedisData.getFloat("Dis", 0));
+        sendBroadcast("fbtime",timedisData.getFloat("facebookTime", 0));
+        sendBroadcast("fbdis", timedisData.getFloat("facebookDis", 0));
+        sendBroadcast("igtime",timedisData.getFloat("instagramTime", 0));
+        sendBroadcast("igdis",timedisData.getFloat("instagramDis", 0));
+        sendBroadcast("linetime", timedisData.getFloat("lineTime", 0));
+        sendBroadcast("linedis", timedisData.getFloat("lineDis", 0));
+        sendBroadcast("yttime", timedisData.getFloat("youtubeTime", 0));
+        sendBroadcast("ytdis", timedisData.getFloat("youtubeDis", 0));
+
         return false;
+    }
+    public void sendBroadcast(String key,float data){
+        Intent intent = new Intent(key);
+        intent.putExtra(key, data);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    public double computeDis(double time)
+    {
+        double dis = 0;
+        if(time < 21205)
+            dis = time * 0.01 + 167.5;
+        else if(time > 21205 && time < 52525)
+            dis = time * 0.02 + 327.65;
+        else if(time > 52525)
+            dis = 1306.69;
+
+        return dis;
     }
 }
