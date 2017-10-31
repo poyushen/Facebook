@@ -30,50 +30,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00         00"
-            android:textColor="#FFFFFF"
-            android:textSize="18dp"
-            android:layout_alignBaseline="@+id/totalDis"
-            android:layout_alignBottom="@+id/totalDis"
-            android:layout_alignEnd="@+id/Startbutton"
-            android:layout_marginEnd="33dp"
-            android:id="@+id/totalTime" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="00         00"
-            android:textColor="#FFFFFF"
-            android:textSize="18dp"
-            android:id="@+id/totalDis"
-            android:layout_marginTop="105dp"
-            android:layout_alignTop="@+id/Startbutton"
-            android:layout_toStartOf="@+id/totalTime"
-            android:layout_marginEnd="84dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Km         M"
-            android:textColor="#FFFFFF"
-            android:textSize="18dp"
-            android:id="@+id/totalDistext"
-            android:layout_below="@+id/totalDis"
-            android:layout_alignEnd="@+id/totalDis" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hr         Min"
-            android:textColor="#FFFFFF"
-            android:textSize="18dp"
-            android:id="@+id/totalTimetext"
-            android:layout_below="@+id/totalTime"
-            android:layout_alignStart="@+id/totalTime" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="00Hr    00Min"
             android:textColor="#FFFFFF"
             android:textSize="12dp"
@@ -100,16 +56,6 @@
             android:id="@+id/lineDis"
             android:layout_above="@+id/lineTime"
             android:layout_toStartOf="@+id/Startbutton" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="00Hr    00Min"
-            android:textColor="#FFFFFF"
-            android:textSize="12dp"
-            android:id="@+id/igTime"
-            android:layout_alignParentBottom="true"
-            android:layout_alignStart="@+id/igDis" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -146,12 +92,67 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="00   Km"
+            android:textSize="18dp"
+            android:textColor="#FFFFFF"
+            android:layout_above="@+id/igDis"
+            android:layout_toEndOf="@+id/fbTime"
+            android:layout_marginBottom="80dp"
+            android:id="@+id/km" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00   Hr"
+            android:textSize="18dp"
+            android:textColor="#FFFFFF"
+            android:layout_alignBaseline="@+id/km"
+            android:layout_alignBottom="@+id/km"
+            android:layout_alignStart="@+id/Startbutton"
+            android:id="@+id/hr" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00   Min"
+            android:textSize="18dp"
+            android:textColor="#FFFFFF"
+            android:layout_alignBaseline="@+id/m"
+            android:layout_alignBottom="@+id/m"
+            android:layout_alignStart="@+id/hr"
+            android:id="@+id/min" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00   M"
+            android:textSize="18dp"
+            android:textColor="#FFFFFF"
+            android:id="@+id/m"
+            android:layout_below="@+id/hr"
+            android:layout_alignStart="@+id/km" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00Hr    00Min"
+            android:textColor="#FFFFFF"
+            android:textSize="12dp"
+            android:id="@+id/igTime"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/fbTime"
+            android:layout_marginStart="27dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="00Km  00M"
             android:textColor="#FFFFFF"
             android:textSize="12dp"
             android:id="@+id/igDis"
             android:layout_above="@+id/igTime"
-            android:layout_alignEnd="@+id/totalDistext" />
+            android:layout_alignStart="@+id/igTime" />
+
 
     </RelativeLayout>
 

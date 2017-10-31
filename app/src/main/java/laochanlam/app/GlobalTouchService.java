@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
 
-    private String TAG = this.getClass().getSimpleName();
     private WindowManager mWindowManager;
     private LinearLayout touchLayout;
 
@@ -58,18 +57,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     private long currentTime;
     private long changetime;
 
-
-    private float fbTime = 0;
-    private float igTime = 0;
-    private float lineTime = 0;
-    private float ytTime = 0;
-
-    private float fbDis = 0;
-    private float igDis = 0;
-    private float lineDis = 0;
-    private float ytDis = 0;
-
-
     @Override
     public int onStartCommand(Intent i, int flag, int id) {
         if(i != null) {
@@ -78,8 +65,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 attractionString = b.getString("attraction_key");
             }
         }
-
-        //screenOff = i.getBooleanExtra("screen_state", false);
         return START_REDELIVER_INTENT;
     }
 
@@ -106,10 +91,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         timedisData = PreferenceManager.getDefaultSharedPreferences(this);
         editor = timedisData.edit();
-
-        //IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        //filter.addAction(Intent.ACTION_SCREEN_OFF);
-        //registerReceiver(screenReceiver, filter);
 
         /**********************************Fake View****************************/
         touchLayout = new LinearLayout(this);
@@ -143,7 +124,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             if (touchLayout != null)
                 mWindowManager.removeView(touchLayout);
         }
-        //unregisterReceiver(screenReceiver);
         super.onDestroy();
     }
 
@@ -166,6 +146,7 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 if ((totalDis / 15000) >= attractionArray.getJSONObject(a).getDouble("distance")  && (totalDis / 15000) <= attractionArray.getJSONObject(a+1).getDouble("distance") && timedisData.getBoolean("imageid"+a, false) == false) {
 
                     editor.putBoolean("imageid"+a, true);
+                    editor.putString("place",attractionArray.getJSONObject(a).getString("Title"));
                     editor.commit();
 
                     LayoutInflater inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -188,14 +169,18 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         /**********************************AlertDialog****************************/
 
+        int cm = (int)(totalDis/150);
+        int km = (int)(cm / 100000);
+        int m = (int)((cm - (km * 100000))/100);
+
         /**********************************Notification****************************/
         final int notifyID = 1;
         final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         final Notification notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("溫馨提示")
-                .setContentText("您已經滑動手機 " + msg.what + " 秒。")
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                .setSmallIcon(R.mipmap.finger)
+                .setContentTitle(timedisData.getString("place", ""))
+                .setContentText(km + " Km " + m + " M ")
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.finger))
                 .setAutoCancel(true)
                 .build();
         notificationManager.notify(notifyID, notification);
@@ -203,20 +188,15 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         return;
 
-
     }
 
     @Override
     public boolean onTouch (View v , MotionEvent event){
 
-        //ActivityManager manager = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
-        //List<ActivityManager.RunningAppProcessInfo> tasks = manager.getRunningAppProcesses();
-
         UsageStatsManager um = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
         long endTime = System.currentTimeMillis();
         long beginTime = 0;
         List<UsageStats>stats = um.queryUsageStats(UsageStatsManager.INTERVAL_MONTHLY, beginTime, endTime);
-
 
         String app = "";
         String appName = "";
@@ -230,7 +210,6 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
                 app = sortedMap.get(sortedMap.lastKey()).getPackageName();
             }
         }
-
 
         if(app.toLowerCase().contains("facebook".toLowerCase()))
             appName = "facebook";
@@ -246,36 +225,31 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         currentTime = SystemClock.elapsedRealtime();
         changetime = currentTime - prevTime;
 
-
         if(prevTime != 0) {
 
             float prevAppTime = timedisData.getFloat(appName + "Time", 0);
             float prevAppDis = timedisData.getFloat(appName + "Dis", 0);
 
-            Log.e("ch",""+changetime);
-            Log.e("app",appName);
 
-            editor.putFloat(appName + "Time", prevAppTime + changetime);
-            editor.putFloat(appName + "Dis", prevAppDis + (float)computeDis(changetime));
-            editor.putFloat("Time",timedisData.getFloat("Time", 0) + changetime);
-            editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float)computeDis(changetime));
-            editor.commit();
-
-            /*fbTime = timedisData.getFloat("facebookTime", 0);
-            igTime = timedisData.getFloat("instagramTime", 0);
-            lineTime = timedisData.getFloat("lineTime", 0);
-            ytTime = timedisData.getFloat("youtubeTime", 0);
-
-            fbDis = timedisData.getFloat("facebookDis", 0);
-            igDis = timedisData.getFloat("instagramDis", 0);
-            lineDis = timedisData.getFloat("lineDis", 0);
-            ytDis = timedisData.getFloat("youtubeDis", 0);*/
+            if(changetime >= 10*60*1000){
+                editor.putFloat(appName + "Time", prevAppTime + 30000);
+                editor.putFloat(appName + "Dis", prevAppDis + (float)computeDis(30000));
+                editor.putFloat("Time",timedisData.getFloat("Time", 0) + 30000);
+                editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float)computeDis(30000));
+                editor.commit();
+            }
+            else if(changetime < 10*60*1000){
+                editor.putFloat(appName + "Time", prevAppTime + changetime);
+                editor.putFloat(appName + "Dis", prevAppDis + (float) computeDis(changetime));
+                editor.putFloat("Time", timedisData.getFloat("Time", 0) + changetime);
+                editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float) computeDis(changetime));
+                editor.commit();
+            }
 
         }
         prevTime = currentTime;
 
         checkPoints(timedisData.getFloat("Time", 0), timedisData.getFloat("Dis", 0));
-
 
         sendBroadcast("time",timedisData.getFloat("Time", 0));
         sendBroadcast("dis",timedisData.getFloat("Dis", 0));

@@ -38,19 +38,20 @@ public class MainActivity extends AppCompatActivity {
     public String attraction = "";
     public int[] time = new int[5];
     public int[] distance = new int[5];
-    public int[] totalTime= new int[2];
-    public int[] totalDis = new int[2];
-    public int[] fbTime = new int[2];
-    public int[] fbDis = new int[2];
-    public int[] igTime = new int[2];
-    public int[] igDis = new int[2];
-    public int[] lineTime = new int[2];
-    public int[] lineDis = new int[2];
-    public int[] ytTime = new int[2];
-    public int[] ytDis = new int[2];
+
+    public String[] totalTime= new String[2];
+    public String[] totalDis = new String[2];
+    public String[] fbTime = new String[2];
+    public String[] fbDis = new String[2];
+    public String[] igTime = new String[2];
+    public String[] igDis = new String[2];
+    public String[] lineTime = new String[2];
+    public String[] lineDis = new String[2];
+    public String[] ytTime = new String[2];
+    public String[] ytDis = new String[2];
 
 
-    TextView TIME,DIS,FBTIME,FBDIS,IGTIME,IGDIS,LINETIME,LINEDIS,YTTIME,YTDIS;
+    TextView KM,M,HR,MIN,FBTIME,FBDIS,IGTIME,IGDIS,LINETIME,LINEDIS,YTTIME,YTDIS;
 
     public static MainActivity getIns(){
         return mainActivity;
@@ -76,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(TIME, "  " + String.valueOf(totalTime[0]) + "             " + String.valueOf(totalTime[1]));
+                    MainActivity.getIns().updateTextView(HR, totalTime[0] + "   HR");
+                    MainActivity.getIns().updateTextView(MIN, totalTime[1] + "   MIN");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -94,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(DIS, String.valueOf(totalDis[0]) + "         " + String.valueOf(totalDis[1]));
+                    MainActivity.getIns().updateTextView(KM, totalDis[0] + "   KM");
+                    MainActivity.getIns().updateTextView(M, totalDis[1] + "   M");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -112,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(FBTIME, String.valueOf(fbTime[0]) + "Hr    " + String.valueOf(fbTime[1]) + "Min");
+                    MainActivity.getIns().updateTextView(FBTIME, fbTime[0] + "Hr    " + fbTime[1] + "Min");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(FBDIS, String.valueOf(fbDis[0]) + "Km  " + String.valueOf(fbDis[1]) + "M");
+                    MainActivity.getIns().updateTextView(FBDIS, fbDis[0] + "Km  " + fbDis[1] + "M");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -148,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(IGTIME, String.valueOf(igTime[0]) + "Hr    " + String.valueOf(igTime[1]) + "Min");
+                    MainActivity.getIns().updateTextView(IGTIME, igTime[0] + "Hr    " + igTime[1] + "Min");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -162,12 +165,9 @@ public class MainActivity extends AppCompatActivity {
 
             igDis = convertDistance(distance[2]);
 
-            //Log.e("km",""+igDis[0]);
-            //Log.e("m",""+igDis[1]);
-
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(IGDIS, String.valueOf(igDis[0]) + "Km  " + String.valueOf(igDis[1]) + "M");
+                    MainActivity.getIns().updateTextView(IGDIS, igDis[0] + "Km  " + igDis[1] + "M");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(LINETIME, String.valueOf(lineTime[0]) + "Hr    " + String.valueOf(lineTime[1]) + "Min");
+                    MainActivity.getIns().updateTextView(LINETIME, lineTime[0] + "Hr    " + lineTime[1] + "Min");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(LINEDIS, String.valueOf(lineDis[0]) + "Km  " + String.valueOf(lineDis[1]) + "M");
+                    MainActivity.getIns().updateTextView(LINEDIS, lineDis[0] + "Km  " + lineDis[1] + "M");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(YTTIME, String.valueOf(ytTime[0]) + "Hr    " + String.valueOf(ytTime[1]) + "Min");
+                    MainActivity.getIns().updateTextView(YTTIME, ytTime[0] + "Hr    " + ytTime[1] + "Min");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 if(MainActivity.getIns() != null){
-                    MainActivity.getIns().updateTextView(YTDIS, String.valueOf(ytDis[0]) + "Km  " + String.valueOf(ytDis[1]) + "M");
+                    MainActivity.getIns().updateTextView(YTDIS, ytDis[0] + "Km  " + ytDis[1] + "M");
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -278,12 +278,12 @@ public class MainActivity extends AppCompatActivity {
 
         mainActivity = this;
 
-        Log.e("create","create");
-
         startButton = (ImageButton) findViewById(R.id.Startbutton);
         textMsg = (TextView) findViewById(R.id.textMsg);
-        TIME = (TextView)findViewById(R.id.totalTime);
-        DIS = (TextView)findViewById(R.id.totalDis);
+        KM = (TextView)findViewById(R.id.km);
+        M = (TextView)findViewById(R.id.m);
+        HR = (TextView)findViewById(R.id.hr);
+        MIN = (TextView)findViewById(R.id.min);
         FBTIME = (TextView)findViewById(R.id.fbTime);
         FBDIS = (TextView)findViewById(R.id.fbDis);
         IGTIME = (TextView)findViewById(R.id.igTime);
@@ -310,12 +310,10 @@ public class MainActivity extends AppCompatActivity {
             {
                 globalService = new Intent(this, GlobalTouchService.class);
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                //Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
                 startActivity(intent);
 
                 Bundle bundle = new Bundle();//pass json data to service
                 bundle.putString("attraction_key", attraction);
-                bundle.putBoolean("reset",true);
                 globalService.putExtras(bundle);
 
             }
@@ -324,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
                 globalService = new Intent(this, GlobalTouchService.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("attraction_key", attraction);
-                bundle.putBoolean("reset",true);
                 globalService.putExtras(bundle);
             }
         }
@@ -332,7 +329,6 @@ public class MainActivity extends AppCompatActivity {
         {   globalService = new Intent(this,GlobalTouchService.class);
             Bundle bundle = new Bundle();
             bundle.putString("attraction_key", attraction);
-            bundle.putBoolean("reset",true);
             globalService.putExtras(bundle);
         }
 
@@ -387,31 +383,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public int[] convertTime(int time){
-        int[] timeArray = new int[2];
-
-        /*int day = (int)(time/86400);
-        int hr = (int)((time - (day*86400))/3600);
-        int min = (int)((time - (day*86400) - (hr*3600))/60);
-        int sec = time - (day*86400) - (hr*3600) - (min * 60);*/
+    public String[] convertTime(int time){
+        String[] timeArray = new String[2];
 
         int hr = (int)(time/3600);
         int min = (int)((time - (hr*3600))/60);
 
-        timeArray[0] = hr;
-        timeArray[1] = min;
+        timeArray[0] = String.valueOf(hr);
+        timeArray[1] = String.valueOf(min);
+
+        if(hr >= 10 || min >= 10)
+        {
+            timeArray[0] = String.format("%02d",hr);
+            timeArray[1] = String.format("%02d", min);
+        }
+        if(hr >= 100 || min >= 100)
+        {
+            timeArray[0] = String.format("%03d",hr);
+            timeArray[1] = String.format("%03d", min);
+        }
 
         return timeArray;
     }
 
-    public int[] convertDistance(int dis){
-        int[] disArray = new int[2];
+    public String[] convertDistance(int dis){
+        String[] disArray = new String[2];
         int km = (int)(dis/100000);
         int m = (int)((dis - (km*1000))/100);
 
-        disArray[0] = km;
-        disArray[1] = m;
+        disArray[0] = String.valueOf(km);
+        disArray[1] = String.valueOf(m);
 
+        if(km >= 10 || m >= 10)
+        {
+            disArray[0] = String.format("%02d",km);
+            disArray[1] = String.format("%02d", m);
+        }
+        if(km >= 100 || m >= 100)
+        {
+            disArray[0] = String.format("%03d",km);
+            disArray[1] = String.format("%03d", m);
+        }
         return disArray;
     }
 
