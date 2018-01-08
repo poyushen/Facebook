@@ -1,30 +1,22 @@
 package laochanlam.app;
-
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.support.v4.app.AppLaunchChecker;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.TimeUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -35,27 +27,25 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import org.json.JSONException;
 import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
-
 
 public class GlobalTouchService extends Service implements View.OnTouchListener{
 
     private WindowManager mWindowManager;
     private LinearLayout touchLayout;
-
     private String attractionString;
     private JSONArray attractionArray;
     private SharedPreferences timedisData;
     private SharedPreferences.Editor editor;
-
     private int[] imageId=new int[23];
-
     private long prevTime = 0;
     private long currentTime;
     private long changetime;
+    private JSONObject info_obj = new JSONObject();
 
     @Override
     public int onStartCommand(Intent i, int flag, int id) {
@@ -69,24 +59,20 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     }
 
     public void buildArray(){
-        try
-        {
+        try {
             attractionArray = new JSONArray(attractionString);//change string to array
-        }catch(JSONException e)
-        {
+        }catch(JSONException e) {
             e.printStackTrace();
         }
     }
-
 
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
     }
 
-
     @Override
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
 
         timedisData = PreferenceManager.getDefaultSharedPreferences(this);
@@ -119,8 +105,8 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
     }
 
     @Override
-    public void onDestroy(){
-        if (mWindowManager != null){
+    public void onDestroy() {
+        if (mWindowManager != null) {
             if (touchLayout != null)
                 mWindowManager.removeView(touchLayout);
         }
@@ -187,12 +173,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         /**********************************Notification****************************/
 
         return;
-
     }
 
     @Override
-    public boolean onTouch (View v , MotionEvent event){
+    public boolean onTouch (View v , MotionEvent event) {
 
+        //get foreground app
         UsageStatsManager um = (UsageStatsManager)getSystemService(Context.USAGE_STATS_SERVICE);
         long endTime = System.currentTimeMillis();
         long beginTime = 0;
@@ -201,12 +187,12 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
         String app = "";
         String appName = "";
 
-        if(stats != null){
+        if(stats != null) {
             SortedMap<Long, UsageStats>sortedMap = new TreeMap<Long, UsageStats>();
-            for(UsageStats us : stats){
+            for(UsageStats us : stats) {
                 sortedMap.put(us.getLastTimeUsed(), us);
             }
-            if(sortedMap != null && !sortedMap.isEmpty()){
+            if(sortedMap != null && !sortedMap.isEmpty()) {
                 app = sortedMap.get(sortedMap.lastKey()).getPackageName();
             }
         }
@@ -227,51 +213,105 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
 
         if(prevTime != 0) {
 
-            float prevAppTime = timedisData.getFloat(appName + "Time", 0);
-            float prevAppDis = timedisData.getFloat(appName + "Dis", 0);
-
-
-            if(changetime >= 10*60*1000){
-                editor.putFloat(appName + "Time", prevAppTime + 30000);
-                editor.putFloat(appName + "Dis", prevAppDis + (float)computeDis(30000));
+            if(changetime >= 10*60*1000) {
+                editor.putFloat(appName + "Time", timedisData.getFloat(appName + "Time", 0) + 30000);
+                editor.putFloat(appName + "Dis", timedisData.getFloat(appName + "Dis", 0) + (float)computeDis(30000));
                 editor.putFloat("Time",timedisData.getFloat("Time", 0) + 30000);
                 editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float)computeDis(30000));
                 editor.commit();
             }
-            else if(changetime < 10*60*1000){
-                editor.putFloat(appName + "Time", prevAppTime + changetime);
-                editor.putFloat(appName + "Dis", prevAppDis + (float) computeDis(changetime));
+            else if(changetime < 10*60*1000) {
+                editor.putFloat(appName + "Time", timedisData.getFloat(appName + "Time", 0) + changetime);
+                editor.putFloat(appName + "Dis", timedisData.getFloat(appName + "Dis", 0) + (float) computeDis(changetime));
                 editor.putFloat("Time", timedisData.getFloat("Time", 0) + changetime);
                 editor.putFloat("Dis", timedisData.getFloat("Dis", 0) + (float) computeDis(changetime));
                 editor.commit();
-            }
 
+            }
         }
         prevTime = currentTime;
-
         checkPoints(timedisData.getFloat("Time", 0), timedisData.getFloat("Dis", 0));
 
-        sendBroadcast("time",timedisData.getFloat("Time", 0));
-        sendBroadcast("dis",timedisData.getFloat("Dis", 0));
-        sendBroadcast("fbtime",timedisData.getFloat("facebookTime", 0));
-        sendBroadcast("fbdis", timedisData.getFloat("facebookDis", 0));
-        sendBroadcast("igtime",timedisData.getFloat("instagramTime", 0));
-        sendBroadcast("igdis",timedisData.getFloat("instagramDis", 0));
-        sendBroadcast("linetime", timedisData.getFloat("lineTime", 0));
-        sendBroadcast("linedis", timedisData.getFloat("lineDis", 0));
-        sendBroadcast("yttime", timedisData.getFloat("youtubeTime", 0));
-        sendBroadcast("ytdis", timedisData.getFloat("youtubeDis", 0));
+        JSONObject totaltime_obj = new JSONObject();
+        JSONObject fbtime_obj = new JSONObject();
+        JSONObject igtime_obj = new JSONObject();
+        JSONObject linetime_obj = new JSONObject();
+        JSONObject yttime_obj = new JSONObject();
+        JSONObject time_obj = new JSONObject();
+
+        JSONObject totaldis_obj = new JSONObject();
+        JSONObject fbdis_obj = new JSONObject();
+        JSONObject igdis_obj = new JSONObject();
+        JSONObject linedis_obj = new JSONObject();
+        JSONObject ytdis_obj = new JSONObject();
+        JSONObject dis_obj = new JSONObject();
+        try {
+            totaltime_obj.put("hr",convertTime((timedisData.getFloat("Time", 0))/1000)[0]);
+            totaltime_obj.put("min",convertTime((timedisData.getFloat("Time", 0))/1000)[1]);
+            totaltime_obj.put("sec",convertTime((timedisData.getFloat("Time", 0))/1000)[2]);
+            fbtime_obj.put("hr",convertTime((timedisData.getFloat("facebookTime", 0))/1000)[0]);
+            fbtime_obj.put("min",convertTime((timedisData.getFloat("facebookTime", 0))/1000)[1]);
+            fbtime_obj.put("sec",convertTime((timedisData.getFloat("facebookTime", 0))/1000)[2]);
+            igtime_obj.put("hr",convertTime((timedisData.getFloat("instagramTime", 0))/1000)[0]);
+            igtime_obj.put("min",convertTime((timedisData.getFloat("instagramTime", 0))/1000)[1]);
+            igtime_obj.put("sec",convertTime((timedisData.getFloat("instagramTime", 0))/1000)[2]);
+            linetime_obj.put("hr",convertTime((timedisData.getFloat("lineTime", 0))/1000)[0]);
+            linetime_obj.put("min",convertTime((timedisData.getFloat("lineTime", 0))/1000)[1]);
+            linetime_obj.put("sec",convertTime((timedisData.getFloat("lineTime", 0))/1000)[2]);
+            yttime_obj.put("hr",convertTime((timedisData.getFloat("youtubeTime", 0))/1000)[0]);
+            yttime_obj.put("min",convertTime((timedisData.getFloat("youtubeTime", 0))/1000)[1]);
+            yttime_obj.put("sec",convertTime((timedisData.getFloat("youtubeTime", 0))/1000)[2]);
+
+            time_obj.put("total", totaltime_obj);
+            time_obj.put("fb", fbtime_obj);
+            time_obj.put("ig", igtime_obj);
+            time_obj.put("line", linetime_obj);
+            time_obj.put("youtube", yttime_obj);
+
+            totaldis_obj.put("km", convertDis((timedisData.getFloat("Dis", 0))/150)[0]);
+            totaldis_obj.put("m", convertDis((timedisData.getFloat("Dis", 0))/150)[1]);
+            totaldis_obj.put("cm", convertDis((timedisData.getFloat("Dis", 0))/150)[2]);
+            fbdis_obj.put("km", convertDis((timedisData.getFloat("facebookDis", 0))/150)[0]);
+            fbdis_obj.put("m", convertDis((timedisData.getFloat("facebookDis", 0))/150)[1]);
+            fbdis_obj.put("cm", convertDis((timedisData.getFloat("facebookDis", 0))/150)[2]);
+            igdis_obj.put("km", convertDis((timedisData.getFloat("instagramDis", 0))/150)[0]);
+            igdis_obj.put("m", convertDis((timedisData.getFloat("instagramDis", 0))/150)[1]);
+            igdis_obj.put("cm", convertDis((timedisData.getFloat("instagramDis", 0))/150)[2]);
+            linedis_obj.put("km", convertDis((timedisData.getFloat("lineDis", 0))/150)[0]);
+            linedis_obj.put("m", convertDis((timedisData.getFloat("lineDis", 0))/150)[1]);
+            linedis_obj.put("cm", convertDis((timedisData.getFloat("lineDis", 0))/150)[2]);
+            ytdis_obj.put("km", convertDis((timedisData.getFloat("youtubeDis", 0))/150)[0]);
+            ytdis_obj.put("m", convertDis((timedisData.getFloat("youtubeDis", 0))/150)[1]);
+            ytdis_obj.put("cm", convertDis((timedisData.getFloat("youtubeDis", 0))/150)[2]);
+
+            dis_obj.put("total", totaldis_obj);
+            dis_obj.put("fb", fbdis_obj);
+            dis_obj.put("ig", igdis_obj);
+            dis_obj.put("line", linedis_obj);
+            dis_obj.put("youtube", ytdis_obj);
+
+            info_obj.put("time", time_obj);
+            info_obj.put("dist", dis_obj);
+
+
+
+        }catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+        Log.e("obj", ""+info_obj);
+
+        sendBroadcast("info", info_obj.toString());
 
         return false;
     }
-    public void sendBroadcast(String key,float data){
+    public void sendBroadcast(String key,String data) {
         Intent intent = new Intent(key);
         intent.putExtra(key, data);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public double computeDis(double time)
-    {
+    public double computeDis(double time) {
         double dis = 0;
         if(time < 21205)
             dis = time * 0.01 + 167.5;
@@ -281,5 +321,19 @@ public class GlobalTouchService extends Service implements View.OnTouchListener{
             dis = 1306.69;
 
         return dis;
+    }
+    public int[] convertTime(float time){
+        int[] timeArray = new int[3];
+        timeArray[0] = (int)(time / 3600);
+        timeArray[1] = (int)((time - (timeArray[0]*3600))/60);
+        timeArray[2] = (int)(time - (timeArray[0]*3600) - (timeArray[1]*60));
+        return timeArray;
+    }
+    public int[] convertDis(float dist){
+        int[] disArray = new int[3];
+        disArray[0] = (int)(dist / 100000);
+        disArray[1] = (int)((dist - (disArray[0]*100000)) / 100);
+        disArray[2] = (int)(dist - (disArray[0]*100000) - (disArray[1]*100));
+        return disArray;
     }
 }

@@ -1,7 +1,7 @@
 [
   {"Id":"0","Title":"NCKU","distance":"0"},
   {"Id":"1","Title":"NCKU","distance":"0","time":"0"},
-  {"Id":"2","Title":"Tainan Station","distance":"14682","time":"1503"},
+  {"Id":"2","Title":"Tainan Station","distance":"10000","time":"1503"},
   {"Id":"3","Title":"Taoyuan Airport","distance":"302332","time":"11108"},
   {"Id":"4","Title":"Fukuoka Airport","distance":"1165332","time":"7200"},
   {"Id":"5","Title":"Hakata Station","distance":"1168969","time":"759"},
